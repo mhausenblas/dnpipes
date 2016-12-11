@@ -71,7 +71,7 @@ bye
 
 And here's a screen shot of the whole thing:
 
-![screen shot of example dnpipes session](img/example-session.png)
+![screen shot of example dnpipes session](img/session.png)
 
 ## Use cases
 
