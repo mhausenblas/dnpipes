@@ -50,8 +50,14 @@ An example session looks as follows. I've set up two terminals, in one I'm start
 
 ```bash
 $ ./dnpipes --mode=publisher --broker=broker-0.kafka.mesos:9951 --topic=test
-PUBLISH> hello!
-PUBLISH> bye
+> hello!
+> bye
+> RESET
+2016/12/11 13:38:57 Connected to 10.0.6.130:2181
+2016/12/11 13:38:57 Authenticated: id=97087250213175381, timeout=4000
+[0] - &{Czxid:295 Mzxid:295 Ctime:1481463523762 Mtime:1481463523762 Version:0 Cversion:1 Aversion:0 EphemeralOwner:0 DataLength:0 NumChildren:1 Pzxid:296}
+reset this dnpipes
+> ^C
 ```
 
 The second terminal has a subscriber running:
@@ -60,6 +66,7 @@ The second terminal has a subscriber running:
 $ ./dnpipes --mode=subscriber --broker=broker-0.kafka.mesos:9951 --topic=test 2>/dev/null
 hello!
 bye
+^C
 ```
 
 And here's a screen shot of the whole thing:
