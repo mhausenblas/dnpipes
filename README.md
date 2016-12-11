@@ -15,15 +15,17 @@ A `dnpipes` is a distributed ordered queue (FIFO) of messages available to a num
 
 A `dnpipes` implementation MUST support the following operations:
 
-- `push(TOPIC, MSG)` … executed by a participant in the publisher role this write a message `MSG` to a `dnpipes` called `TOPIC`.
-- `MSG <- pull(TOPIC)` … executed by a participant in the subscriber or consumer role this reads a message `MSG` from a `dnpipes` called `TOPIC`.
-- `reset(TOPIC)` … this is an action triggered by either a publisher or subscriber role that removes all messages from a `dnpipes` called `TOPIC`.
+- `push(TOPIC, MSG)` … executed by a publisher, this writes the message `MSG` to a `dnpipes` called `TOPIC`.
+- `MSG <- pull(TOPIC)` … executed by a subscriber, this reads a message from a `dnpipes` called `TOPIC`.
+- `reset(TOPIC)` … executed by either a publisher or consumer, this removes all messages from a `dnpipes` called `TOPIC`.
 
 The following MUST be true at any point in time:
 
 1. After `push` is executed by the publisher `MSG` MUST be available for `pull` to any participant until `reset` is triggered and has completed.
 1. A `pull` does not remove a message from a `dnpipes`, it merely delivers its content tot he consumer.
-1. The way how participants discover and connect to a `dnpipes` is outside of the scope of this specification.
+1. The way how participants discover a `dnpipes` is outside of the scope of this specification.
+
+Note concerning the last point: since there are many ways to implement service discovery in a distributed system we do not expect that an agreement can be found here hence we leave it up to the implementation how to go about it. The next sections shows an example using Kafka and DNS to achieve this.
 
 ## Reference implementation
 
@@ -66,4 +68,8 @@ And here's a screen shot of the whole thing:
 
 ## Use cases
 
-TBD
+A `dnpipes` can be useful in a number of situations including but not limited to the following:
+
+- To implement a work queue with, say, one generator and N worker consumers; example: [Adron/testing-aws-sqs-worker](https://github.com/Adron/testing-aws-sqs-worker)
+- To do event dispatching in microservices; example: [How we build microservices at Karma](https://blog.karmawifi.com/how-we-build-microservices-at-karma-71497a89bfb4)
+- To coordinate Function-as-a-Service executions; example: [Integrate SQS and Lambda: serverless architecture for asynchronous workloads](https://cloudonaut.io/integrate-sqs-and-lambda-serverless-architecture-for-asynchronous-workloads/)
