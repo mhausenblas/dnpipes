@@ -38,6 +38,7 @@ From source:
 ```bash
 $ go get github.com/mhausenblas/dnpipes
 $ go build
+$ sudo mv dnpipes /usr/local/dnpipes
 ```
 
 From binaries, for Linux:
