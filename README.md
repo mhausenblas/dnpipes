@@ -1,6 +1,6 @@
 # dnpipes
 
-Distributed Named Pipes, short: `dnpipes`, are essentially a distributed variant of Unix [named pipes](http://en.wikipedia.org/wiki/Named_pipe). They play a similar role, for example, [SQS](https://aws.amazon.com/sqs/) plays in AWS or the [Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) plays in Azure. 
+Distributed Named Pipes (or: `dnpipes`) are essentially a distributed version of Unix [named pipes](http://en.wikipedia.org/wiki/Named_pipe) comparable to, for example, [SQS](https://aws.amazon.com/sqs/) in AWS or the [Service Bus](https://azure.microsoft.com/en-us/services/service-bus/) in Azure. 
 
 ![dnpipes concept](img/concept.png)
 
@@ -10,10 +10,20 @@ Conceptually, we're dealing with a bunch of distributed processes (`dpN` above).
 
 Interpret the key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", "MAY NOT", and "OPTIONAL" in the context of this repo as defined in [RFC 2119](https://tools.ietf.org/html/rfc2119).
 
-A dnpipes implementation MUST support two operations:
+A `dnpipes` is a distributed ordered queue (FIFO) of messages available to a number of participating distributed processes. A distributed process is a useful abstraction provided by systems such as DC/OS (for example a Marathon app or a Metronome job) or Kubernetes (ReplicaSet or a Job) that give a user the illusion that a service or application she is executing on a bunch of commodity machines (the cluster) behaves like one global entity while it really is a collection of locally executed processes. In DC/OS this locally executed process would be a [Mesos task](http://mesos.apache.org/documentation/latest/architecture/) and in Kubernetes a [pod](http://kubernetes.io/docs/api-reference/v1/definitions/#_v1_podspec).
 
-- `push(TOPIC, MSG)`
-- `pull(TOPIC)`
+
+A `dnpipes` implementation MUST support the following operations:
+
+- `push(TOPIC, MSG)` … executed by a participant in the publisher role this write a message `MSG` to a `dnpipes` called `TOPIC`.
+- `MSG <- pull(TOPIC)` … executed by a participant in the subscriber or consumer role this reads a message `MSG` from a `dnpipes` called `TOPIC`.
+- `reset(TOPIC)` … this is an action triggered by either a publisher or subscriber role that removes all messages from a `dnpipes` called `TOPIC`.
+
+The following MUST be true at any point in time:
+
+1. After `push` is executed by the publisher `MSG` MUST be available for `pull` to any participant until `reset` is triggered and has completed.
+1. A `pull` does not remove a message from a `dnpipes`, it merely delivers its content tot he consumer.
+1. The way how participants discover and connect to a `dnpipes` is outside of the scope of this specification.
 
 ## Reference implementation
 
