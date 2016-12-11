@@ -59,7 +59,7 @@ $ sudo chmod +x /usr/local/bin/dnpipes
 
 ### Example session
 
-To try it out yourself, you first need a [install a DC/OS cluster](https://dcos.io/install/) and then Apache Kafka like so:
+To try it out yourself, you first need a to [install a DC/OS cluster](https://dcos.io/install/) and then Apache Kafka like so:
 
 ```bash
 $ dcos package install kafka
