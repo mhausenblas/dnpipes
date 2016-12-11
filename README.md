@@ -40,9 +40,21 @@ $ go get github.com/mhausenblas/dnpipes
 $ go build
 ```
 
-From binaries:
+From binaries, for Linux:
 
-TBD
+```bash
+$ curl -s -L https://github.com/mhausenblas/dnpipes/releases/download/0.1.0/linux-dnpipes -o dnpipes
+$ sudo mv dnpipes /usr/local/dnpipes
+$ sudo chmod +x /usr/local/bin/dnpipes
+```
+
+From binaries, for macOS:
+
+```bash
+$ curl -s -L https://github.com/mhausenblas/dnpipes/releases/download/0.1.0/macos-dnpipes -o dnpipes
+$ sudo mv dnpipes /usr/local/dnpipes
+$ sudo chmod +x /usr/local/bin/dnpipes
+```
 
 ### Example session
 
