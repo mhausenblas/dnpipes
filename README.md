@@ -22,7 +22,7 @@ A `dnpipes` implementation MUST support the following operations:
 The following MUST be true at any point in time:
 
 1. After `push` is executed by the publisher `MSG` MUST be available for `pull` to any participant until `reset` is triggered and has completed.
-1. A `pull` does not remove a message from a `dnpipes`, it merely delivers its content tot he consumer.
+1. A `pull` does not remove a message from a `dnpipes`, it merely delivers its content to the consumer.
 1. The way how participants discover a `dnpipes` is outside of the scope of this specification.
 
 Note concerning the last point: since there are many ways to implement service discovery in a distributed system we do not expect that an agreement can be found here hence we leave it up to the implementation how to go about it. The next sections shows an example using Kafka and DNS to achieve this.
@@ -77,6 +77,6 @@ And here's a screen shot of the whole thing:
 
 A `dnpipes` can be useful in a number of situations including but not limited to the following:
 
-- To implement a work queue with, say, one generator and N worker consumers; example: [Adron/testing-aws-sqs-worker](https://github.com/Adron/testing-aws-sqs-worker)
-- To do event dispatching in microservices; example: [How we build microservices at Karma](https://blog.karmawifi.com/how-we-build-microservices-at-karma-71497a89bfb4)
-- To coordinate Function-as-a-Service executions; example: [Integrate SQS and Lambda: serverless architecture for asynchronous workloads](https://cloudonaut.io/integrate-sqs-and-lambda-serverless-architecture-for-asynchronous-workloads/)
+- To implement a work queue with, for example: [Adron/testing-aws-sqs-worker](https://github.com/Adron/testing-aws-sqs-worker)
+- To do event dispatching in microservices, for example: [How we build microservices at Karma](https://blog.karmawifi.com/how-we-build-microservices-at-karma-71497a89bfb4)
+- To coordinate Function-as-a-Service executions, for example: [Integrate SQS and Lambda: serverless architecture for asynchronous workloads](https://cloudonaut.io/integrate-sqs-and-lambda-serverless-architecture-for-asynchronous-workloads/)
