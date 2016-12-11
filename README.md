@@ -59,7 +59,32 @@ $ sudo chmod +x /usr/local/bin/dnpipes
 
 ### Example session
 
-An example session looks as follows. I've set up two terminals, in one I'm starting the publisher:
+To try it out yourself, you first need a [install a DC/OS cluster](https://dcos.io/install/) and then Apache Kafka like so:
+
+```bash
+$ dcos package install kafka
+```
+
+Note that if you are unfamiliar with Kafka and its terminology, you can check out the respective [Kafka 101 example](https://github.com/dcos/examples/tree/master/1.8/kafka) now.
+
+Next, figure out where the brokers are (in my case I started Kafka with one broker):
+
+```bash
+$ dcos kafka connection
+
+{
+  "address": [
+    "10.0.2.94:9951"
+  ],
+  "zookeeper": "master.mesos:2181/dcos-service-kafka",
+  "dns": [
+    "broker-0.kafka.mesos:9951"
+  ],
+  "vip": "broker.kafka.l4lb.thisdcos.directory:9092"
+}
+```
+Now, an example session using the `dnpipes` reference implementation looks as follows.
+I've set up two terminals, in one I'm starting the `dnpipes` in publisher mode:
 
 ```bash
 $ ./dnpipes --mode=publisher --broker=broker-0.kafka.mesos:9951 --topic=test
@@ -73,7 +98,7 @@ reset this dnpipes
 > ^C
 ```
 
-The second terminal has a subscriber running:
+The second terminal has `dnpipes` in subscriber mode running:
 
 ```bash
 $ ./dnpipes --mode=subscriber --broker=broker-0.kafka.mesos:9951 --topic=test 2>/dev/null
