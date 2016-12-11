@@ -17,8 +17,35 @@ The reference implementation of dnpipes is based on [DC/OS](https://dcos.io) usi
 
 ### Install
 
-TBD.
+From source:
+
+```bash
+$ go get github.com/mhausenblas/dnpipes
+$ go build
+```
+
+From binaries:
+
+TBD
 
 ### Use
 
-TBD.
+An example session looks as follows. I've set up two terminals, in one I'm starting the publisher:
+
+```bash
+$ ./dnpipes --mode=publisher --broker=broker-0.kafka.mesos:9951 --topic=test
+PUBLISH> hello!
+PUBLISH> bye
+```
+
+The second terminal has a subscriber running:
+
+```bash
+$ ./dnpipes --mode=subscriber --broker=broker-0.kafka.mesos:9951 --topic=test 2>/dev/null
+hello!
+bye
+```
+
+And here's a screen shot of the whole thing:
+
+![screen shot of example dnpipes session](img/example-session.png)

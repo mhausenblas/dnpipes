@@ -1,0 +1,124 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"github.com/Shopify/sarama"
+	log "github.com/Sirupsen/logrus"
+	"os"
+)
+
+const (
+	VERSION         string = "0.1.0"
+	MODE_PUBLISHER         = "publisher"
+	MODE_SUBSCRIBER        = "subscriber"
+)
+
+var (
+	version bool
+	// operations mode of this agent:
+	omode string
+	// FQDN/IP + port of a Kafka broker:
+	broker string
+	// the active Kafka topic:
+	topic string
+	// the Kafka producer:
+	producer sarama.SyncProducer
+)
+
+func init() {
+	flag.BoolVar(&version, "version", false, "Display version information")
+	flag.StringVar(&omode, "mode", MODE_SUBSCRIBER, fmt.Sprintf("The operations mode of this agent, can be either \"%s\" or \"%s\".", MODE_PUBLISHER, MODE_SUBSCRIBER))
+	flag.StringVar(&broker, "broker", "", "The FQDN or IP address and port of a Kafka broker. Example: broker-1.kafka.mesos:9382 or localhost:9092")
+	flag.StringVar(&topic, "topic", "", "The topic to publish to or pull from. Example: test")
+
+	flag.Usage = func() {
+		fmt.Printf("Usage: %s [args]\n\n", os.Args[0])
+		fmt.Println("Arguments:")
+		flag.PrintDefaults()
+	}
+	flag.Parse()
+}
+
+func about() {
+	fmt.Printf("This is the dnpipes reference implementation in version %s\n", VERSION)
+}
+
+func handlePublisher() {
+	if p, err := sarama.NewSyncProducer([]string{broker}, nil); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	} else {
+		producer = p
+	}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+	}()
+	imsg := ""
+	for {
+		fmt.Print("PUBLISH> ")
+		fmt.Scanln(&imsg)
+		msg := &sarama.ProducerMessage{Topic: string(topic), Value: sarama.StringEncoder(imsg)}
+		if _, _, err := producer.SendMessage(msg); err != nil {
+			log.Error("Failed to send message ", err)
+		} else {
+			log.Debug(fmt.Sprintf("%#v", msg))
+		}
+	}
+}
+
+func handleSubscriber() {
+	var consumer sarama.Consumer
+	if c, err := sarama.NewConsumer([]string{broker}, nil); err != nil {
+		log.WithFields(log.Fields{"func": "handleSubscriber"}).Error(err)
+		return
+	} else {
+		consumer = c
+	}
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.WithFields(log.Fields{"func": "handleSubscriber"}).Error(err)
+		}
+	}()
+
+	if partitionConsumer, err := consumer.ConsumePartition(topic, 0, sarama.OffsetNewest); err != nil {
+		log.WithFields(log.Fields{"func": "handleSubscriber"}).Error(err)
+		return
+	} else {
+		defer func() {
+			if err := partitionConsumer.Close(); err != nil {
+				log.WithFields(log.Fields{"func": "handleSubscriber"}).Error(err)
+			}
+		}()
+		for {
+			msg := <-partitionConsumer.Messages()
+			log.Debug(fmt.Sprintf("%#v", msg))
+			fmt.Println(string(msg.Value))
+		}
+	}
+}
+
+func main() {
+	if version {
+		about()
+		os.Exit(0)
+	}
+	if broker == "" {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	switch omode {
+	case MODE_PUBLISHER:
+		handlePublisher()
+	case MODE_SUBSCRIBER:
+		handleSubscriber()
+	default:
+		fmt.Println("Usage error, you provided an unknown mode")
+		flag.Usage()
+		os.Exit(1)
+	}
+}
