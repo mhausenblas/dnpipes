@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/Shopify/sarama"
 	log "github.com/Sirupsen/logrus"
+	"github.com/samuel/go-zookeeper/zk"
 	"os"
+	"time"
 )
 
 const (
@@ -44,6 +46,28 @@ func about() {
 	fmt.Printf("This is the dnpipes reference implementation in version %s\n", VERSION)
 }
 
+func handleReset() {
+	zks := []string{"leader.mesos:2181"}
+	conn, _, _ := zk.Connect(zks, time.Second)
+	partitions, stat, _ := conn.Children("/dcos-service-kafka/brokers/topics/" + topic + "/partitions")
+	fmt.Println(fmt.Sprintf("%+v - %+v", partitions, stat))
+	for _, p := range partitions {
+		if err := conn.Delete("/dcos-service-kafka/brokers/topics/"+topic+"/partitions/"+p+"/state", -1); err != nil {
+			log.WithFields(log.Fields{"func": "handleSubscriber"}).Error("There was a problem resetting the topic:", err)
+		}
+		if err := conn.Delete("/dcos-service-kafka/brokers/topics/"+topic+"/partitions/"+p, -1); err != nil {
+			log.WithFields(log.Fields{"func": "handleSubscriber"}).Error("There was a problem resetting the topic:", err)
+		}
+	}
+	if err := conn.Delete("/dcos-service-kafka/brokers/topics/"+topic+"/partitions", -1); err != nil {
+		log.WithFields(log.Fields{"func": "handleSubscriber"}).Error("There was a problem resetting the topic:", err)
+	}
+	if err := conn.Delete("/dcos-service-kafka/brokers/topics/"+topic, -1); err != nil {
+		log.WithFields(log.Fields{"func": "handleSubscriber"}).Error("There was a problem resetting the topic:", err)
+	}
+	fmt.Println("reset this dnpipes")
+}
+
 func handlePublisher() {
 	if p, err := sarama.NewSyncProducer([]string{broker}, nil); err != nil {
 		log.Error(err)
@@ -59,13 +83,17 @@ func handlePublisher() {
 	}()
 	imsg := ""
 	for {
-		fmt.Print("PUBLISH> ")
+		fmt.Print("> ")
 		fmt.Scanln(&imsg)
-		msg := &sarama.ProducerMessage{Topic: string(topic), Value: sarama.StringEncoder(imsg)}
-		if _, _, err := producer.SendMessage(msg); err != nil {
-			log.Error("Failed to send message ", err)
+		if imsg == "RESET" {
+			handleReset()
 		} else {
-			log.Debug(fmt.Sprintf("%#v", msg))
+			msg := &sarama.ProducerMessage{Topic: string(topic), Value: sarama.StringEncoder(imsg)}
+			if _, _, err := producer.SendMessage(msg); err != nil {
+				log.WithFields(log.Fields{"func": "handlePublisher"}).Error("Failed to send message ", err)
+			} else {
+				log.Debug(fmt.Sprintf("%#v", msg))
+			}
 		}
 	}
 }
